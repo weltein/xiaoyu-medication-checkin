@@ -15,9 +15,15 @@ for (const file of requiredFiles) {
 const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
 const worker = fs.readFileSync(path.join(dist, "sw.js"), "utf8");
 const manifest = fs.readFileSync(path.join(dist, "manifest.webmanifest"), "utf8");
+const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
 
 JSON.parse(manifest);
 new Function(worker);
+
+if (vercelConfig.outputDirectory !== "dist") throw new Error("Vercel 输出目录必须是 dist");
+if (!vercelConfig.rewrites?.some((rule) => rule.source === "/(.*)" && rule.destination === "/index.html")) {
+  throw new Error("Vercel SPA 回退路由缺失");
+}
 
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 if (!inlineScripts.length) throw new Error("index.html 中没有应用脚本");
