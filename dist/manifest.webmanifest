@@ -1,0 +1,17 @@
+{
+  "name": "用药打卡",
+  "short_name": "用药打卡",
+  "description": "查看每日用药安排并记录完成时间",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff9f7",
+  "theme_color": "#bd5870",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

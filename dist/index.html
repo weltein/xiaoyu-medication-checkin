@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#bd5870">
+  <meta name="description" content="查看今日用药安排并记录完成时间">
+  <title>用药打卡</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #382f32;
+      --muted: #75696d;
+      --paper: #fff9f7;
+      --surface: #ffffff;
+      --rose: #bd5870;
+      --rose-dark: #923d53;
+      --rose-soft: #f9e2e7;
+      --mint: #dff2e8;
+      --mint-ink: #246147;
+      --line: #eadfe2;
+      --shadow: 0 8px 28px rgba(93, 47, 61, 0.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--paper); }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(249, 226, 231, 0.78), transparent 28rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      width: min(100%, 560px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 18px max(34px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .icon-button:active { transform: scale(0.96); }
+    .icon-button:focus-visible,
+    .check-button:focus-visible,
+    .today-button:focus-visible { outline: 3px solid rgba(189, 88, 112, 0.26); outline-offset: 2px; }
+
+    .date-block { margin-top: 28px; }
+
+    .date-line {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .date-title {
+      margin: 0;
+      font-size: clamp(1.75rem, 8vw, 2.3rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .weekday {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .progress-text {
+      flex: 0 0 auto;
+      padding-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .progress-text strong { color: var(--rose-dark); font-size: 1.1rem; }
+
+    .progress-track {
+      height: 7px;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #efe6e8;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--rose), #d98396);
+      transition: width 220ms ease;
+    }
+
+    .today-button {
+      display: none;
+      margin: 14px 0 0;
+      padding: 8px 13px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--rose-soft);
+      color: var(--rose-dark);
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .today-button.visible { display: inline-flex; }
+
+    .schedule { margin-top: 28px; }
+
+    .period { margin-top: 28px; }
+    .period:first-child { margin-top: 0; }
+
+    .period-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .period-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--rose);
+      box-shadow: 0 0 0 5px var(--rose-soft);
+    }
+
+    .task-list { display: grid; gap: 10px; }
+
+    .task {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      transition: border-color 180ms ease, background 180ms ease, transform 120ms ease;
+    }
+
+    .task.completed {
+      border-color: #c8e5d6;
+      background: #fbfffc;
+      box-shadow: 0 8px 26px rgba(49, 116, 82, 0.07);
+    }
+
+    .medicine-name {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 740;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .medicine-rule {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .medicine-warning {
+      margin: 5px 0 0;
+      color: #9b5c21;
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+
+    .check-button {
+      min-width: 82px;
+      min-height: 48px;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--rose);
+      color: white;
+      font-weight: 760;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 120ms ease, background 180ms ease;
+    }
+
+    .check-button:active { transform: scale(0.97); }
+
+    .task.completed .check-button {
+      background: var(--mint);
+      color: var(--mint-ink);
+    }
+
+    .check-time {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.72rem;
+      font-weight: 650;
+    }
+
+    .empty {
+      margin-top: 32px;
+      padding: 32px 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .empty-mark {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--mint);
+      color: var(--mint-ink);
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .empty h2 { margin: 0; font-size: 1.08rem; }
+    .empty p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+    .storage-note {
+      margin: 28px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 380px) {
+      .app { padding-inline: 14px; }
+      .task { padding: 14px; gap: 10px; }
+      .check-button { min-width: 74px; }
+    }
+
+    @media (min-width: 760px) {
+      .app { padding-top: 34px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1>用药打卡</h1>
+      <nav class="date-nav" aria-label="切换日期">
+        <button class="icon-button" id="prevDay" type="button" aria-label="前一天">←</button>
+        <button class="icon-button" id="nextDay" type="button" aria-label="后一天">→</button>
+      </nav>
+    </header>
+
+    <section class="date-block" aria-labelledby="dateTitle">
+      <div class="date-line">
+        <div>
+          <h2 class="date-title" id="dateTitle"></h2>
+          <div class="weekday" id="weekday"></div>
+        </div>
+        <div class="progress-text" id="progressText" aria-live="polite"></div>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      <button class="today-button" id="backToday" type="button">回到今天</button>
+    </section>
+
+    <section class="schedule" id="schedule" aria-label="当日用药安排"></section>
+    <p class="storage-note">打卡记录仅保存在当前设备</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "medication-checkin-records-v1";
+    const slots = ["早", "午", "晚", "睡前"];
+    const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+    const plans = [
+      {
+        id: "gatifloxacin",
+        name: "加替沙星滴眼液（术前已开）",
+        rule: "每天4次 · 9/16–9/22",
+        periods: [
+          ["2026-09-16", "2026-09-22", slots]
+        ]
+      },
+      {
+        id: "tobradex",
+        name: "典必殊（妥布霉素地塞米松）滴眼液",
+        rule: "每天4次 · 9/16–9/19",
+        warning: "激素类用药，严格按医嘱",
+        periods: [
+          ["2026-09-16", "2026-09-19", slots]
+        ]
+      },
+      {
+        id: "fluorometholone",
+        name: "氟米龙滴眼液",
+        rule: "按阶段减量 · 9/20–10/10",
+        warning: "激素类用药，严格按医嘱",
+        periods: [
+          ["2026-09-20", "2026-09-26", slots],
+          ["2026-09-27", "2026-10-03", ["早", "晚"]],
+          ["2026-10-04", "2026-10-10", ["睡前"]]
+        ]
+      },
+      {
+        id: "vitamin-a-gel",
+        name: "维生素A棕阀酸酯眼用凝胶",
+        rule: "每晚睡前1次 · 9/16–9/29",
+        periods: [
+          ["2026-09-16", "2026-09-29", ["睡前"]]
+        ]
+      },
+      {
+        id: "artificial-tears",
+        name: "人工泪液",
+        rule: "每天4次 · 9/30–3/30",
+        periods: [
+          ["2026-09-30", "2027-03-30", slots]
+        ]
+      },
+      {
+        id: "betaxolol",
+        name: "盐酸倍他洛尔滴眼液",
+        rule: "每晚1次 · 9/16–10/16",
+        periods: [
+          ["2026-09-16", "2026-10-16", ["睡前"]]
+        ]
+      }
+    ];
+
+    const scheduleEl = document.getElementById("schedule");
+    const dateTitleEl = document.getElementById("dateTitle");
+    const weekdayEl = document.getElementById("weekday");
+    const progressTextEl = document.getElementById("progressText");
+    const progressFillEl = document.getElementById("progressFill");
+    const backTodayEl = document.getElementById("backToday");
+
+    function localDate(value = new Date()) {
+      return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    }
+
+    function dateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function readRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function writeRecords(records) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function tasksForDate(key) {
+      const result = Object.fromEntries(slots.map((slot) => [slot, []]));
+      plans.forEach((plan) => {
+        plan.periods.forEach(([start, end, activeSlots]) => {
+          if (key >= start && key <= end) {
+            activeSlots.forEach((slot) => result[slot].push(plan));
+          }
+        });
+      });
+      return result;
+    }
+
+    function recordId(key, slot, medicineId) {
+      return `${key}|${slot}|${medicineId}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    let selectedDate = localDate();
+
+    function render() {
+      const key = dateKey(selectedDate);
+      const todayKey = dateKey(localDate());
+      const grouped = tasksForDate(key);
+      const records = readRecords();
+      const allTasks = slots.flatMap((slot) => grouped[slot].map((plan) => ({ slot, plan })));
+      const completed = allTasks.filter(({ slot, plan }) => records[recordId(key, slot, plan.id)]).length;
+
+      dateTitleEl.textContent = `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日`;
+      weekdayEl.textContent = key === todayKey ? `今天 · ${weekdays[selectedDate.getDay()]}` : weekdays[selectedDate.getDay()];
+      progressTextEl.innerHTML = allTasks.length
+        ? `<strong>${completed}</strong> / ${allTasks.length}`
+        : "无安排";
+      progressFillEl.style.width = allTasks.length ? `${(completed / allTasks.length) * 100}%` : "0%";
+      backTodayEl.classList.toggle("visible", key !== todayKey);
+
+      if (!allTasks.length) {
+        scheduleEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-mark" aria-hidden="true">✓</div>
+            <h2>当天没有用药安排</h2>
+            <p>可以切换日期查看其他日期。</p>
+          </div>`;
+        return;
+      }
+
+      scheduleEl.innerHTML = slots
+        .filter((slot) => grouped[slot].length)
+        .map((slot) => `
+          <section class="period" aria-labelledby="period-${slot}">
+            <h3 class="period-heading" id="period-${slot}">
+              <span class="period-dot" aria-hidden="true"></span>${slot}
+            </h3>
+            <div class="task-list">
+              ${grouped[slot].map((plan) => {
+                const id = recordId(key, slot, plan.id);
+                const record = records[id];
+                return `
+                  <article class="task${record ? " completed" : ""}" data-record-id="${escapeHtml(id)}">
+                    <div>
+                      <h4 class="medicine-name">${escapeHtml(plan.name)}</h4>
+                      <p class="medicine-rule">${escapeHtml(plan.rule)}</p>
+                      ${plan.warning ? `<p class="medicine-warning">${escapeHtml(plan.warning)}</p>` : ""}
+                    </div>
+                    <button class="check-button" type="button" data-action="toggle" data-date="${key}" data-slot="${slot}" data-medicine="${plan.id}" aria-pressed="${record ? "true" : "false"}" aria-label="${escapeHtml(plan.name)}${record ? "，取消记录" : "，记录完成"}">
+                      ${record ? `已记录<span class="check-time">${escapeHtml(record.time)}</span>` : "记录"}
+                    </button>
+                  </article>`;
+              }).join("")}
+            </div>
+          </section>`)
+        .join("");
+    }
+
+    function toggleRecord(key, slot, medicineId) {
+      const records = readRecords();
+      const id = recordId(key, slot, medicineId);
+      if (records[id]) {
+        delete records[id];
+      } else {
+        const now = new Date();
+        records[id] = {
+          completedAt: now.toISOString(),
+          time: now.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })
+        };
+      }
+      writeRecords(records);
+      render();
+      return records[id] || null;
+    }
+
+    function moveDay(amount) {
+      selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + amount);
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.getElementById("prevDay").addEventListener("click", () => moveDay(-1));
+    document.getElementById("nextDay").addEventListener("click", () => moveDay(1));
+    backTodayEl.addEventListener("click", () => { selectedDate = localDate(); render(); });
+
+    scheduleEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-action='toggle']");
+      if (!button) return;
+      toggleRecord(button.dataset.date, button.dataset.slot, button.dataset.medicine);
+    });
+
+    function registerWebMcpTools() {
+      const context = document.modelContext;
+      if (!context?.registerTool) return;
+      const lifecycle = new AbortController();
+
+      const validTask = (input) => {
+        if (!input || typeof input !== "object") throw new Error("参数无效");
+        const { date, slot, medicineId } = input;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !slots.includes(slot)) throw new Error("日期或时段无效");
+        const task = tasksForDate(date)[slot].find((plan) => plan.id === medicineId);
+        if (!task) throw new Error("当日该时段没有这项用药安排");
+        return { date, slot, medicineId };
+      };
+
+      Promise.resolve(context.registerTool({
+        name: "read_daily_medication_schedule",
+        title: "查看当日用药",
+        description: "读取指定日期的用药时段、药名和已记录状态。",
+        inputSchema: {
+          type: "object",
+          properties: { date: { type: "string", description: "YYYY-MM-DD" } },
+          required: ["date"],
+          additionalProperties: false
+        },
+        annotations: { readOnlyHint: true, untrustedContentHint: false },
+        execute(input) {
+          if (!input || !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) throw new Error("日期无效");
+          const records = readRecords();
+          const grouped = tasksForDate(input.date);
+          return {
+            date: input.date,
+            tasks: slots.flatMap((slot) => grouped[slot].map((plan) => ({
+              slot,
+              medicineId: plan.id,
+              name: plan.name,
+              rule: plan.rule,
+              completed: Boolean(records[recordId(input.date, slot, plan.id)]),
+              recordedTime: records[recordId(input.date, slot, plan.id)]?.time || null
+            })))
+          };
+        }
+      }, { signal: lifecycle.signal })).catch(() => {});
+
+      Promise.resolve(context.registerTool({
+        name: "toggle_medication_record",
+        title: "切换用药记录",
+        description: "将指定日期和时段的某项用药切换为已记录或未记录，并同步更新界面。",
+        inputSchema: {
+          type: "object",
+          properties: {
+            date: { type: "string", description: "YYYY-MM-DD" },
+            slot: { type: "string", enum: slots },
+            medicineId: { type: "string" }
+          },
+          required: ["date", "slot", "medicineId"],
+          additionalProperties: false
+        },
+        annotations: { readOnlyHint: false, untrustedContentHint: false },
+        execute(input) {
+          const task = validTask(input);
+          const record = toggleRecord(task.date, task.slot, task.medicineId);
+          return { ...task, completed: Boolean(record), recordedTime: record?.time || null };
+        }
+      }, { signal: lifecycle.signal })).catch(() => {});
+    }
+
+    render();
+    registerWebMcpTools();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
