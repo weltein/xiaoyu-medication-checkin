@@ -1,0 +1,9 @@
+.openai/
+deploy/
+miniprogram/
+tests/
+*.xlsx
+*.zip
+*.tar.gz
+README-小程序.md
+project.config.json
