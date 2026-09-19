@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "用药打卡",
+    "navigationBarBackgroundColor": "#fff9f7",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fff9f7",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

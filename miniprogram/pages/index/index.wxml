@@ -1,0 +1,125 @@
+<view class="page-shell">
+  <view class="topbar">
+    <text class="app-title">用药打卡</text>
+    <view class="top-actions">
+      <button class="edit-button" bindtap="openEditor">编辑药品</button>
+      <button class="day-button" aria-label="前一天" data-offset="-1" bindtap="moveDay">←</button>
+      <button class="day-button" aria-label="后一天" data-offset="1" bindtap="moveDay">→</button>
+    </view>
+  </view>
+
+  <view class="date-block">
+    <view class="date-line">
+      <view>
+        <view class="date-title">{{dateTitle}}</view>
+        <view class="weekday">{{weekdayText}}</view>
+      </view>
+      <view class="progress-text" wx:if="{{totalCount}}">
+        <text class="progress-strong">{{completedCount}}</text> / {{totalCount}}
+      </view>
+      <view class="progress-text" wx:else>无安排</view>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{progressPercent}}%;"></view>
+    </view>
+    <button class="today-button" wx:if="{{!isToday}}" bindtap="backToday">回到今天</button>
+  </view>
+
+  <view class="schedule" wx:if="{{totalCount}}">
+    <view class="period" wx:for="{{groups}}" wx:key="slot">
+      <view class="period-heading">
+        <view class="period-dot"></view>
+        <text>{{item.slot}}</text>
+      </view>
+      <view class="task-list">
+        <view class="task {{task.completed ? 'completed' : ''}}" wx:for="{{item.tasks}}" wx:for-item="task" wx:key="recordId">
+          <view class="task-copy">
+            <view class="medicine-name">{{task.name}}</view>
+            <view class="medicine-rule">{{task.rule}}</view>
+            <view class="medicine-warning" wx:if="{{task.warning}}">{{task.warning}}</view>
+          </view>
+          <button
+            class="check-button {{task.completed ? 'checked' : ''}}"
+            data-slot="{{item.slot}}"
+            data-medicine-id="{{task.id}}"
+            bindtap="toggleRecord"
+          >
+            <text>{{task.completed ? '已记录' : '记录'}}</text>
+            <text class="check-time" wx:if="{{task.completed}}">{{task.recordedTime}}</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:else>
+    <view class="empty-mark">✓</view>
+    <view class="empty-title">当天没有用药安排</view>
+    <view class="empty-copy">可以切换日期查看其他日期。</view>
+  </view>
+
+  <view class="storage-note">打卡记录仅保存在当前设备</view>
+</view>
+
+<view class="modal-mask" wx:if="{{editorVisible}}" bindtap="closeEditor">
+  <view class="editor-sheet" catchtap="stopPropagation">
+    <view class="editor-header">
+      <button class="round-button" wx:if="{{editingPlan}}" bindtap="showPlanList">←</button>
+      <view class="header-spacer" wx:else></view>
+      <view class="editor-title">{{editingPlan ? '修改用药安排' : '编辑药品'}}</view>
+      <button class="round-button" bindtap="closeEditor">×</button>
+    </view>
+
+    <scroll-view class="editor-scroll" scroll-y="true">
+      <view class="plan-list" wx:if="{{!editingPlan}}">
+        <button class="plan-item" wx:for="{{plans}}" wx:key="id" data-plan-id="{{item.id}}" bindtap="editPlan">
+          <text class="plan-item-name">{{item.name}}</text>
+          <text class="plan-item-rule">{{item.rule}}</text>
+        </button>
+      </view>
+
+      <view class="plan-form" wx:else>
+        <view class="field">
+          <text class="field-label">药品名称</text>
+          <input class="text-input" maxlength="80" value="{{draft.name}}" data-field="name" bindinput="updateTextField" />
+        </view>
+        <view class="field">
+          <text class="field-label">用法 / 规格</text>
+          <input class="text-input" maxlength="80" value="{{draft.rule}}" data-field="rule" bindinput="updateTextField" />
+        </view>
+
+        <view class="phase-card" wx:for="{{draft.periods}}" wx:key="start" wx:for-index="phaseIndex">
+          <view class="phase-label">使用阶段{{draft.periods.length > 1 ? ' ' + (phaseIndex + 1) : ''}}</view>
+          <view class="date-grid">
+            <view class="date-field">
+              <text>开始日期</text>
+              <picker mode="date" value="{{item.start}}" data-phase-index="{{phaseIndex}}" data-date-field="start" bindchange="changeDate">
+                <view class="date-picker">{{item.start}}</view>
+              </picker>
+            </view>
+            <view class="date-field">
+              <text>结束日期</text>
+              <picker mode="date" value="{{item.end}}" data-phase-index="{{phaseIndex}}" data-date-field="end" bindchange="changeDate">
+                <view class="date-picker">{{item.end}}</view>
+              </picker>
+            </view>
+          </view>
+          <view class="slot-grid">
+            <button
+              class="slot-option {{slotItem.selected ? 'selected' : ''}}"
+              wx:for="{{item.slotOptions}}"
+              wx:for-item="slotItem"
+              wx:key="name"
+              data-phase-index="{{phaseIndex}}"
+              data-slot="{{slotItem.name}}"
+              bindtap="toggleDraftSlot"
+            >{{slotItem.name}}</button>
+          </view>
+        </view>
+
+        <view class="form-error">{{formError}}</view>
+        <button class="save-button" bindtap="savePlan">保存修改</button>
+      </view>
+    </scroll-view>
+  </view>
+</view>

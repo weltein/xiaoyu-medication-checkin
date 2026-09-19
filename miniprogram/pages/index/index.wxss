@@ -1,0 +1,473 @@
+.page-shell {
+  min-height: 100vh;
+  padding: 34rpx 28rpx calc(50rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(249, 226, 231, 0.82), transparent 560rpx),
+    #fff9f7;
+}
+
+.topbar,
+.top-actions,
+.date-line,
+.period-heading,
+.editor-header {
+  display: flex;
+  align-items: center;
+}
+
+.topbar,
+.date-line,
+.editor-header {
+  justify-content: space-between;
+}
+
+.app-title {
+  font-size: 38rpx;
+  line-height: 1.2;
+  font-weight: 760;
+}
+
+.top-actions {
+  gap: 10rpx;
+}
+
+.edit-button,
+.day-button,
+.today-button,
+.round-button,
+.plan-item,
+.check-button,
+.slot-option,
+.save-button {
+  margin: 0;
+  line-height: normal;
+}
+
+.edit-button {
+  min-height: 76rpx;
+  padding: 0 22rpx;
+  border: 1rpx solid #eadfe2;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.88);
+  color: #923d53;
+  font-size: 26rpx;
+  font-weight: 720;
+  display: flex;
+  align-items: center;
+}
+
+.day-button,
+.round-button {
+  width: 76rpx;
+  height: 76rpx;
+  padding: 0;
+  border: 1rpx solid #eadfe2;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  color: #382f32;
+  font-size: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-block {
+  margin-top: 46rpx;
+}
+
+.date-line {
+  align-items: flex-end;
+  gap: 24rpx;
+}
+
+.date-title {
+  font-size: 60rpx;
+  line-height: 1.08;
+  font-weight: 760;
+  letter-spacing: -2rpx;
+}
+
+.weekday,
+.medicine-rule,
+.storage-note,
+.plan-item-rule,
+.date-field {
+  color: #75696d;
+}
+
+.weekday {
+  margin-top: 10rpx;
+  font-size: 27rpx;
+}
+
+.progress-text {
+  padding-bottom: 6rpx;
+  color: #75696d;
+  font-size: 27rpx;
+}
+
+.progress-strong {
+  color: #923d53;
+  font-size: 34rpx;
+  font-weight: 760;
+}
+
+.progress-track {
+  height: 12rpx;
+  margin-top: 26rpx;
+  overflow: hidden;
+  border-radius: 999rpx;
+  background: #efe6e8;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #bd5870, #d98396);
+  transition: width 200ms ease;
+}
+
+.today-button {
+  margin-top: 22rpx;
+  padding: 14rpx 24rpx;
+  border-radius: 999rpx;
+  background: #f9e2e7;
+  color: #923d53;
+  font-size: 25rpx;
+  font-weight: 680;
+}
+
+.schedule {
+  margin-top: 44rpx;
+}
+
+.period {
+  margin-top: 46rpx;
+}
+
+.period:first-child {
+  margin-top: 0;
+}
+
+.period-heading {
+  gap: 18rpx;
+  margin-bottom: 18rpx;
+  font-size: 29rpx;
+  font-weight: 720;
+}
+
+.period-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #bd5870;
+  box-shadow: 0 0 0 9rpx #f9e2e7;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 28rpx;
+  border: 1rpx solid #eadfe2;
+  border-radius: 30rpx;
+  background: #ffffff;
+  box-shadow: 0 12rpx 38rpx rgba(93, 47, 61, 0.08);
+}
+
+.task.completed {
+  border-color: #c8e5d6;
+  background: #fbfffc;
+}
+
+.task-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.medicine-name {
+  font-size: 30rpx;
+  line-height: 1.4;
+  font-weight: 740;
+  word-break: break-all;
+}
+
+.medicine-rule {
+  margin-top: 8rpx;
+  font-size: 25rpx;
+  line-height: 1.45;
+}
+
+.medicine-warning {
+  margin-top: 8rpx;
+  color: #9b5c21;
+  font-size: 23rpx;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.check-button {
+  min-width: 132rpx;
+  min-height: 84rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 24rpx;
+  background: #bd5870;
+  color: #ffffff;
+  font-size: 29rpx;
+  font-weight: 760;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-button.checked {
+  background: #dff2e8;
+  color: #246147;
+}
+
+.check-time {
+  margin-top: 4rpx;
+  font-size: 21rpx;
+  font-weight: 650;
+}
+
+.empty {
+  margin-top: 54rpx;
+  padding: 56rpx 32rpx;
+  border: 1rpx solid #eadfe2;
+  border-radius: 34rpx;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 12rpx 38rpx rgba(93, 47, 61, 0.08);
+}
+
+.empty-mark {
+  width: 86rpx;
+  height: 86rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 50%;
+  background: #dff2e8;
+  color: #246147;
+  font-size: 40rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-title {
+  font-size: 31rpx;
+  font-weight: 740;
+}
+
+.empty-copy {
+  margin-top: 10rpx;
+  color: #75696d;
+  font-size: 26rpx;
+}
+
+.storage-note {
+  margin-top: 50rpx;
+  text-align: center;
+  font-size: 23rpx;
+}
+
+.modal-mask {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  background: rgba(54, 39, 44, 0.46);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.editor-sheet {
+  width: 100%;
+  max-height: 88vh;
+  border-radius: 36rpx 36rpx 0 0;
+  background: #ffffff;
+  padding-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
+}
+
+.editor-header {
+  height: 104rpx;
+  padding: 0 28rpx;
+  border-bottom: 1rpx solid #eadfe2;
+  box-sizing: border-box;
+}
+
+.editor-title {
+  font-size: 34rpx;
+  font-weight: 760;
+}
+
+.round-button {
+  width: 68rpx;
+  height: 68rpx;
+  border: 0;
+  background: #f9e2e7;
+  color: #923d53;
+}
+
+.header-spacer {
+  width: 68rpx;
+}
+
+.editor-scroll {
+  height: calc(88vh - 104rpx - env(safe-area-inset-bottom));
+}
+
+.plan-list,
+.plan-form {
+  padding: 26rpx 28rpx 42rpx;
+  box-sizing: border-box;
+}
+
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.plan-item {
+  width: 100%;
+  padding: 24rpx 26rpx;
+  border: 1rpx solid #eadfe2;
+  border-radius: 26rpx;
+  background: #ffffff;
+  color: #382f32;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.plan-item-name {
+  font-size: 28rpx;
+  line-height: 1.45;
+  font-weight: 720;
+}
+
+.plan-item-rule {
+  margin-top: 7rpx;
+  font-size: 24rpx;
+}
+
+.plan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.field-label,
+.phase-label {
+  font-size: 26rpx;
+  font-weight: 720;
+}
+
+.text-input,
+.date-picker {
+  min-height: 82rpx;
+  padding: 0 20rpx;
+  border: 1rpx solid #d9cbcf;
+  border-radius: 20rpx;
+  background: #ffffff;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.text-input {
+  width: 100%;
+}
+
+.phase-card {
+  padding: 24rpx;
+  border: 1rpx solid #eadfe2;
+  border-radius: 28rpx;
+  background: #fffbfa;
+}
+
+.phase-label {
+  margin-bottom: 18rpx;
+}
+
+.date-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.date-field {
+  min-width: 0;
+  flex: 1;
+  font-size: 23rpx;
+}
+
+.date-picker {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+  color: #382f32;
+  font-size: 25rpx;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.slot-option {
+  min-width: 0;
+  min-height: 72rpx;
+  padding: 0;
+  border: 1rpx solid #dbcdd1;
+  border-radius: 18rpx;
+  background: #ffffff;
+  color: #75696d;
+  font-size: 25rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-option.selected {
+  border-color: #bd5870;
+  background: #f9e2e7;
+  color: #923d53;
+}
+
+.form-error {
+  min-height: 38rpx;
+  color: #a23b3b;
+  font-size: 25rpx;
+}
+
+.save-button {
+  min-height: 88rpx;
+  border-radius: 24rpx;
+  background: #bd5870;
+  color: #ffffff;
+  font-size: 29rpx;
+  font-weight: 760;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

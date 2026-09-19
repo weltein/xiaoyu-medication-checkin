@@ -1,0 +1,16 @@
+{
+  "description": "用药打卡微信小程序",
+  "miniprogramRoot": "miniprogram/",
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "xiaoyu-medication-checkin",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": true
+  },
+  "simulatorType": "wechat",
+  "condition": {}
+}
