@@ -47,4 +47,23 @@ if (!html.includes('name="bedtime"') || !reminderSettings.includes('bedtime')) {
   throw new Error("缺少睡前提醒时间设置");
 }
 
+const expectedSourceShift = [
+  ['"gatifloxacin"', '"2026-09-15", "2026-09-21"'],
+  ['"tobradex"', '"2026-09-15", "2026-09-18"'],
+  ['"fluorometholone"', '"2026-09-19", "2026-09-25"'],
+  ['"2026-09-26", "2026-10-02"', '["早", "晚"]'],
+  ['"2026-10-03", "2026-10-09"', '["睡前"]'],
+  ['"vitamin-a-gel"', '"2026-09-15", "2026-09-28"'],
+  ['"artificial-tears"', '"2026-09-29", "2027-03-29"'],
+  ['"betaxolol"', '"2026-09-15", "2026-10-15"']
+];
+for (const requiredParts of expectedSourceShift) {
+  if (!requiredParts.every((part) => html.includes(part))) {
+    throw new Error(`初版提前一天后的用药区间缺失：${requiredParts.join(" / ")}`);
+  }
+}
+if (!html.includes('medication-source-reset-2026-09-v1') || !html.includes('medication-checkin-records-v2')) {
+  throw new Error("缺少面向现有用户的一次性数据重置");
+}
+
 console.log("Production verification passed: PWA plus four email reminder schedules.");

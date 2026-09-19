@@ -627,10 +627,10 @@
   </dialog>
 
   <script>
-    const STORAGE_KEY = "medication-checkin-records-v1";
-    const PLAN_STORAGE_KEY = "medication-plans-v1";
-    const PLAN_DATE_MIGRATION_KEY = "medication-plan-date-shift-2026-09-v1";
-    const REMINDER_STORAGE_KEY = "medication-reminder-settings-v1";
+    const STORAGE_KEY = "medication-checkin-records-v2";
+    const PLAN_STORAGE_KEY = "medication-plans-v2";
+    const REMINDER_STORAGE_KEY = "medication-reminder-settings-v2";
+    const DATA_RESET_KEY = "medication-source-reset-2026-09-v1";
     const slots = ["早", "午", "晚", "睡前"];
     const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
@@ -689,6 +689,7 @@
       }
     ];
 
+    resetUserDataFromSource();
     let plans = loadPlans();
 
     const scheduleEl = document.getElementById("schedule");
@@ -709,46 +710,26 @@
       return JSON.parse(JSON.stringify(value));
     }
 
+    function resetUserDataFromSource() {
+      if (localStorage.getItem(DATA_RESET_KEY)) return;
+      [
+        "medication-checkin-records-v1",
+        "medication-plans-v1",
+        "medication-plan-date-shift-2026-09-v1",
+        "medication-reminder-settings-v1",
+        STORAGE_KEY,
+        PLAN_STORAGE_KEY,
+        REMINDER_STORAGE_KEY
+      ].forEach((key) => localStorage.removeItem(key));
+      localStorage.setItem(DATA_RESET_KEY, "done");
+    }
+
     function loadPlans() {
       try {
         const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY));
-        if (Array.isArray(saved) && saved.length === defaultPlans.length) {
-          if (!localStorage.getItem(PLAN_DATE_MIGRATION_KEY)) {
-            const migrated = shiftPlansOneDayEarlier(saved);
-            localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(migrated));
-            localStorage.setItem(PLAN_DATE_MIGRATION_KEY, "done");
-            return migrated;
-          }
-          return saved;
-        }
+        if (Array.isArray(saved) && saved.length === defaultPlans.length) return saved;
       } catch {}
-      localStorage.setItem(PLAN_DATE_MIGRATION_KEY, "done");
       return clone(defaultPlans);
-    }
-
-    function shiftIsoDateOneDayEarlier(value) {
-      const [year, month, day] = value.split("-").map(Number);
-      const shifted = new Date(Date.UTC(year, month - 1, day - 1));
-      return shifted.toISOString().slice(0, 10);
-    }
-
-    function shiftRuleDatesOneDayEarlier(value) {
-      return value.replace(/(\d{1,2})\/(\d{1,2})/g, (_, month, day) => {
-        const shifted = new Date(Date.UTC(2024, Number(month) - 1, Number(day) - 1));
-        return `${shifted.getUTCMonth() + 1}/${shifted.getUTCDate()}`;
-      });
-    }
-
-    function shiftPlansOneDayEarlier(items) {
-      return items.map((plan) => ({
-        ...plan,
-        rule: shiftRuleDatesOneDayEarlier(plan.rule),
-        periods: plan.periods.map(([start, end, activeSlots]) => [
-          shiftIsoDateOneDayEarlier(start),
-          shiftIsoDateOneDayEarlier(end),
-          activeSlots
-        ])
-      }));
     }
 
     function writePlans() {
