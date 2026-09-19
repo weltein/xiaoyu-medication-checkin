@@ -71,6 +71,23 @@
       gap: 6px;
     }
 
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .edit-plans-button {
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--rose-dark);
+      font-weight: 720;
+      cursor: pointer;
+    }
+
     .icon-button {
       width: 44px;
       height: 44px;
@@ -268,6 +285,181 @@
     .empty h2 { margin: 0; font-size: 1.08rem; }
     .empty p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
 
+    .editor-dialog {
+      width: min(100% - 24px, 560px);
+      max-height: min(88vh, 760px);
+      margin: auto;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 24px 70px rgba(71, 38, 48, 0.24);
+    }
+
+    .editor-dialog::backdrop {
+      background: rgba(54, 39, 44, 0.42);
+      backdrop-filter: blur(3px);
+    }
+
+    .editor-shell {
+      display: flex;
+      max-height: min(88vh, 760px);
+      flex-direction: column;
+    }
+
+    .editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .editor-title {
+      margin: 0;
+      font-size: 1.16rem;
+    }
+
+    .editor-close,
+    .editor-back {
+      min-width: 44px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--rose-soft);
+      color: var(--rose-dark);
+      font-size: 1.1rem;
+      font-weight: 760;
+      cursor: pointer;
+    }
+
+    .editor-back { display: none; }
+    .editor-back.visible { display: inline-grid; place-items: center; }
+
+    .editor-content {
+      overflow-y: auto;
+      padding: 16px 18px 22px;
+      overscroll-behavior: contain;
+    }
+
+    .medicine-editor-list { display: grid; gap: 10px; }
+
+    .medicine-editor-item {
+      width: 100%;
+      padding: 14px 15px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .medicine-editor-item strong,
+    .medicine-editor-item span { display: block; }
+    .medicine-editor-item strong { font-size: 0.96rem; line-height: 1.4; }
+    .medicine-editor-item span { margin-top: 4px; color: var(--muted); font-size: 0.82rem; }
+
+    .plan-form { display: grid; gap: 18px; }
+
+    .field { display: grid; gap: 7px; }
+    .field > span,
+    .phase-label { font-size: 0.86rem; font-weight: 720; }
+
+    .text-input,
+    .date-input {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid #d9cbcf;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .text-input:focus,
+    .date-input:focus {
+      border-color: var(--rose);
+      outline: 3px solid rgba(189, 88, 112, 0.14);
+    }
+
+    .phase-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffbfa;
+    }
+
+    .phase-label { margin: 0 0 10px; }
+
+    .date-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .date-grid label { display: grid; gap: 6px; color: var(--muted); font-size: 0.78rem; }
+
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .slot-option {
+      position: relative;
+      min-width: 0;
+    }
+
+    .slot-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .slot-option span {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #dbcdd1;
+      border-radius: 11px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .slot-option input:checked + span {
+      border-color: var(--rose);
+      background: var(--rose-soft);
+      color: var(--rose-dark);
+    }
+
+    .slot-option input:focus-visible + span { outline: 3px solid rgba(189, 88, 112, 0.18); }
+
+    .form-error {
+      min-height: 1.35em;
+      margin: -7px 0 0;
+      color: #a23b3b;
+      font-size: 0.84rem;
+    }
+
+    .save-plan-button {
+      min-height: 50px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--rose);
+      color: #fff;
+      font-weight: 760;
+      cursor: pointer;
+    }
+
     .storage-note {
       margin: 28px 0 0;
       color: var(--muted);
@@ -279,6 +471,9 @@
       .app { padding-inline: 14px; }
       .task { padding: 14px; gap: 10px; }
       .check-button { min-width: 74px; }
+      .top-actions { gap: 6px; }
+      .edit-plans-button { padding-inline: 11px; }
+      .date-grid { grid-template-columns: 1fr; }
     }
 
     @media (min-width: 760px) {
@@ -294,10 +489,13 @@
   <main class="app">
     <header class="topbar">
       <h1>用药打卡</h1>
-      <nav class="date-nav" aria-label="切换日期">
-        <button class="icon-button" id="prevDay" type="button" aria-label="前一天">←</button>
-        <button class="icon-button" id="nextDay" type="button" aria-label="后一天">→</button>
-      </nav>
+      <div class="top-actions">
+        <button class="edit-plans-button" id="openEditor" type="button">编辑药品</button>
+        <nav class="date-nav" aria-label="切换日期">
+          <button class="icon-button" id="prevDay" type="button" aria-label="前一天">←</button>
+          <button class="icon-button" id="nextDay" type="button" aria-label="后一天">→</button>
+        </nav>
+      </div>
     </header>
 
     <section class="date-block" aria-labelledby="dateTitle">
@@ -316,12 +514,24 @@
     <p class="storage-note">打卡记录仅保存在当前设备</p>
   </main>
 
+  <dialog class="editor-dialog" id="editorDialog" aria-labelledby="editorTitle">
+    <div class="editor-shell">
+      <header class="editor-header">
+        <button class="editor-back" id="editorBack" type="button" aria-label="返回药品列表">←</button>
+        <h2 class="editor-title" id="editorTitle">编辑药品</h2>
+        <button class="editor-close" id="editorClose" type="button" aria-label="关闭">×</button>
+      </header>
+      <div class="editor-content" id="editorContent"></div>
+    </div>
+  </dialog>
+
   <script>
     const STORAGE_KEY = "medication-checkin-records-v1";
+    const PLAN_STORAGE_KEY = "medication-plans-v1";
     const slots = ["早", "午", "晚", "睡前"];
     const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
-    const plans = [
+    const defaultPlans = [
       {
         id: "gatifloxacin",
         name: "加替沙星滴眼液（术前已开）",
@@ -376,12 +586,34 @@
       }
     ];
 
+    let plans = loadPlans();
+
     const scheduleEl = document.getElementById("schedule");
     const dateTitleEl = document.getElementById("dateTitle");
     const weekdayEl = document.getElementById("weekday");
     const progressTextEl = document.getElementById("progressText");
     const progressFillEl = document.getElementById("progressFill");
     const backTodayEl = document.getElementById("backToday");
+    const editorDialogEl = document.getElementById("editorDialog");
+    const editorContentEl = document.getElementById("editorContent");
+    const editorTitleEl = document.getElementById("editorTitle");
+    const editorBackEl = document.getElementById("editorBack");
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadPlans() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY));
+        if (Array.isArray(saved) && saved.length === defaultPlans.length) return saved;
+      } catch {}
+      return clone(defaultPlans);
+    }
+
+    function writePlans() {
+      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(plans));
+    }
 
     function localDate(value = new Date()) {
       return new Date(value.getFullYear(), value.getMonth(), value.getDate());
@@ -504,6 +736,90 @@
       return records[id] || null;
     }
 
+    function renderEditorList() {
+      editorTitleEl.textContent = "编辑药品";
+      editorBackEl.classList.remove("visible");
+      editorContentEl.innerHTML = `
+        <div class="medicine-editor-list">
+          ${plans.map((plan) => `
+            <button class="medicine-editor-item" type="button" data-edit-plan="${escapeHtml(plan.id)}">
+              <strong>${escapeHtml(plan.name)}</strong>
+              <span>${escapeHtml(plan.rule)}</span>
+            </button>`).join("")}
+        </div>`;
+    }
+
+    function renderPlanForm(planId) {
+      const plan = plans.find((item) => item.id === planId);
+      if (!plan) return;
+      editorTitleEl.textContent = "修改用药安排";
+      editorBackEl.classList.add("visible");
+      editorContentEl.innerHTML = `
+        <form class="plan-form" id="planForm" data-plan-id="${escapeHtml(plan.id)}">
+          <label class="field">
+            <span>药品名称</span>
+            <input class="text-input" name="name" type="text" value="${escapeHtml(plan.name)}" maxlength="80" required>
+          </label>
+          <label class="field">
+            <span>用法 / 规格</span>
+            <input class="text-input" name="rule" type="text" value="${escapeHtml(plan.rule)}" maxlength="80" required>
+          </label>
+          <div>
+            ${plan.periods.map(([start, end, activeSlots], phaseIndex) => `
+              <section class="phase-card" data-phase="${phaseIndex}">
+                <p class="phase-label">使用阶段${plan.periods.length > 1 ? ` ${phaseIndex + 1}` : ""}</p>
+                <div class="date-grid">
+                  <label>开始日期<input class="date-input" name="start-${phaseIndex}" type="date" value="${escapeHtml(start)}" required></label>
+                  <label>结束日期<input class="date-input" name="end-${phaseIndex}" type="date" value="${escapeHtml(end)}" required></label>
+                </div>
+                <div class="slot-grid" aria-label="用药时段">
+                  ${slots.map((slot) => `
+                    <label class="slot-option">
+                      <input type="checkbox" name="slot-${phaseIndex}" value="${slot}" ${activeSlots.includes(slot) ? "checked" : ""}>
+                      <span>${slot}</span>
+                    </label>`).join("")}
+                </div>
+              </section>`).join("")}
+          </div>
+          <p class="form-error" id="formError" role="alert"></p>
+          <button class="save-plan-button" type="submit">保存修改</button>
+        </form>`;
+    }
+
+    function savePlanForm(form) {
+      const plan = plans.find((item) => item.id === form.dataset.planId);
+      const errorEl = form.querySelector("#formError");
+      if (!plan) return;
+      const name = form.elements.name.value.trim();
+      const rule = form.elements.rule.value.trim();
+      const periods = plan.periods.map((_, phaseIndex) => {
+        const start = form.elements[`start-${phaseIndex}`].value;
+        const end = form.elements[`end-${phaseIndex}`].value;
+        const activeSlots = [...form.querySelectorAll(`input[name='slot-${phaseIndex}']:checked`)].map((input) => input.value);
+        return [start, end, activeSlots];
+      });
+
+      if (!name || !rule) {
+        errorEl.textContent = "请填写药品名称和用法。";
+        return;
+      }
+      if (periods.some(([start, end]) => !start || !end || start > end)) {
+        errorEl.textContent = "请检查开始和结束日期。";
+        return;
+      }
+      if (periods.some(([, , activeSlots]) => activeSlots.length === 0)) {
+        errorEl.textContent = "每个使用阶段至少选择一个时段。";
+        return;
+      }
+
+      plan.name = name;
+      plan.rule = rule;
+      plan.periods = periods;
+      writePlans();
+      render();
+      renderEditorList();
+    }
+
     function moveDay(amount) {
       selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + amount);
       render();
@@ -513,6 +829,24 @@
     document.getElementById("prevDay").addEventListener("click", () => moveDay(-1));
     document.getElementById("nextDay").addEventListener("click", () => moveDay(1));
     backTodayEl.addEventListener("click", () => { selectedDate = localDate(); render(); });
+    document.getElementById("openEditor").addEventListener("click", () => {
+      renderEditorList();
+      editorDialogEl.showModal();
+    });
+    document.getElementById("editorClose").addEventListener("click", () => editorDialogEl.close());
+    editorBackEl.addEventListener("click", renderEditorList);
+    editorDialogEl.addEventListener("click", (event) => {
+      if (event.target === editorDialogEl) editorDialogEl.close();
+    });
+    editorContentEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-edit-plan]");
+      if (button) renderPlanForm(button.dataset.editPlan);
+    });
+    editorContentEl.addEventListener("submit", (event) => {
+      if (event.target.id !== "planForm") return;
+      event.preventDefault();
+      savePlanForm(event.target);
+    });
 
     scheduleEl.addEventListener("click", (event) => {
       const button = event.target.closest("[data-action='toggle']");

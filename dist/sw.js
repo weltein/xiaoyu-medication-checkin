@@ -1,4 +1,4 @@
-const CACHE_NAME = "medication-checkin-v1";
+const CACHE_NAME = "medication-checkin-v2";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./favicon.svg"];
 
 self.addEventListener("install", (event) => {
