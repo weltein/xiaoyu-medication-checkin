@@ -854,74 +854,7 @@
       toggleRecord(button.dataset.date, button.dataset.slot, button.dataset.medicine);
     });
 
-    function registerWebMcpTools() {
-      const context = document.modelContext;
-      if (!context?.registerTool) return;
-      const lifecycle = new AbortController();
-
-      const validTask = (input) => {
-        if (!input || typeof input !== "object") throw new Error("参数无效");
-        const { date, slot, medicineId } = input;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !slots.includes(slot)) throw new Error("日期或时段无效");
-        const task = tasksForDate(date)[slot].find((plan) => plan.id === medicineId);
-        if (!task) throw new Error("当日该时段没有这项用药安排");
-        return { date, slot, medicineId };
-      };
-
-      Promise.resolve(context.registerTool({
-        name: "read_daily_medication_schedule",
-        title: "查看当日用药",
-        description: "读取指定日期的用药时段、药名和已记录状态。",
-        inputSchema: {
-          type: "object",
-          properties: { date: { type: "string", description: "YYYY-MM-DD" } },
-          required: ["date"],
-          additionalProperties: false
-        },
-        annotations: { readOnlyHint: true, untrustedContentHint: false },
-        execute(input) {
-          if (!input || !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) throw new Error("日期无效");
-          const records = readRecords();
-          const grouped = tasksForDate(input.date);
-          return {
-            date: input.date,
-            tasks: slots.flatMap((slot) => grouped[slot].map((plan) => ({
-              slot,
-              medicineId: plan.id,
-              name: plan.name,
-              rule: plan.rule,
-              completed: Boolean(records[recordId(input.date, slot, plan.id)]),
-              recordedTime: records[recordId(input.date, slot, plan.id)]?.time || null
-            })))
-          };
-        }
-      }, { signal: lifecycle.signal })).catch(() => {});
-
-      Promise.resolve(context.registerTool({
-        name: "toggle_medication_record",
-        title: "切换用药记录",
-        description: "将指定日期和时段的某项用药切换为已记录或未记录，并同步更新界面。",
-        inputSchema: {
-          type: "object",
-          properties: {
-            date: { type: "string", description: "YYYY-MM-DD" },
-            slot: { type: "string", enum: slots },
-            medicineId: { type: "string" }
-          },
-          required: ["date", "slot", "medicineId"],
-          additionalProperties: false
-        },
-        annotations: { readOnlyHint: false, untrustedContentHint: false },
-        execute(input) {
-          const task = validTask(input);
-          const record = toggleRecord(task.date, task.slot, task.medicineId);
-          return { ...task, completed: Boolean(record), recordedTime: record?.time || null };
-        }
-      }, { signal: lifecycle.signal })).catch(() => {});
-    }
-
     render();
-    registerWebMcpTools();
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
