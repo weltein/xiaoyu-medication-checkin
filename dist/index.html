@@ -88,6 +88,17 @@
       cursor: pointer;
     }
 
+    .reminder-button {
+      min-height: 44px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--rose-soft);
+      color: var(--rose-dark);
+      font-weight: 720;
+      cursor: pointer;
+    }
+
     .icon-button {
       width: 44px;
       height: 44px;
@@ -370,7 +381,10 @@
     .phase-label { font-size: 0.86rem; font-weight: 720; }
 
     .text-input,
-    .date-input {
+    .date-input,
+    .time-input,
+    .email-input,
+    .password-input {
       width: 100%;
       min-height: 48px;
       padding: 10px 12px;
@@ -382,7 +396,10 @@
     }
 
     .text-input:focus,
-    .date-input:focus {
+    .date-input:focus,
+    .time-input:focus,
+    .email-input:focus,
+    .password-input:focus {
       border-color: var(--rose);
       outline: 3px solid rgba(189, 88, 112, 0.14);
     }
@@ -460,6 +477,53 @@
       cursor: pointer;
     }
 
+    .reminder-form { display: grid; gap: 15px; }
+
+    .reminder-intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .reminder-time-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .reminder-time-grid label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .reminder-status {
+      min-height: 1.45em;
+      margin: -4px 0 0;
+      color: var(--mint-ink);
+      font-size: 0.84rem;
+    }
+
+    .reminder-status.error { color: #a23b3b; }
+
+    .reminder-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 9px;
+    }
+
+    .disable-reminder-button {
+      min-height: 50px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .storage-note {
       margin: 28px 0 0;
       color: var(--muted);
@@ -472,8 +536,10 @@
       .task { padding: 14px; gap: 10px; }
       .check-button { min-width: 74px; }
       .top-actions { gap: 6px; }
-      .edit-plans-button { padding-inline: 11px; }
+      .edit-plans-button,
+      .reminder-button { padding-inline: 10px; font-size: 0.88rem; }
       .date-grid { grid-template-columns: 1fr; }
+      .reminder-time-grid { grid-template-columns: 1fr; }
     }
 
     @media (min-width: 760px) {
@@ -490,6 +556,7 @@
     <header class="topbar">
       <h1>用药打卡</h1>
       <div class="top-actions">
+        <button class="reminder-button" id="openReminder" type="button">提醒</button>
         <button class="edit-plans-button" id="openEditor" type="button">编辑药品</button>
         <nav class="date-nav" aria-label="切换日期">
           <button class="icon-button" id="prevDay" type="button" aria-label="前一天">←</button>
@@ -525,9 +592,45 @@
     </div>
   </dialog>
 
+  <dialog class="editor-dialog" id="reminderDialog" aria-labelledby="reminderTitle">
+    <div class="editor-shell">
+      <header class="editor-header">
+        <span aria-hidden="true" style="width:44px"></span>
+        <h2 class="editor-title" id="reminderTitle">邮件提醒</h2>
+        <button class="editor-close" id="reminderClose" type="button" aria-label="关闭">×</button>
+      </header>
+      <div class="editor-content">
+        <form class="reminder-form" id="reminderForm">
+          <p class="reminder-intro">每天按北京时间发送早、中、晚、睡前四次提醒。</p>
+          <label class="field">
+            <span>接收邮箱</span>
+            <input class="email-input" name="email" type="email" autocomplete="email" maxlength="120" required placeholder="name@example.com">
+          </label>
+          <div class="reminder-time-grid">
+            <label>早<input class="time-input" name="morning" type="time" value="08:00" required></label>
+            <label>中<input class="time-input" name="noon" type="time" value="12:00" required></label>
+            <label>晚<input class="time-input" name="evening" type="time" value="18:00" required></label>
+            <label>睡前<input class="time-input" name="bedtime" type="time" value="22:00" required></label>
+          </div>
+          <label class="field">
+            <span>提醒设置口令</span>
+            <input class="password-input" name="adminKey" type="password" autocomplete="current-password" required placeholder="防止他人修改提醒">
+          </label>
+          <p class="reminder-status" id="reminderStatus" role="status"></p>
+          <div class="reminder-actions">
+            <button class="save-plan-button" type="submit">保存提醒</button>
+            <button class="disable-reminder-button" id="disableReminder" type="button">关闭提醒</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const STORAGE_KEY = "medication-checkin-records-v1";
     const PLAN_STORAGE_KEY = "medication-plans-v1";
+    const PLAN_DATE_MIGRATION_KEY = "medication-plan-date-shift-2026-09-v1";
+    const REMINDER_STORAGE_KEY = "medication-reminder-settings-v1";
     const slots = ["早", "午", "晚", "睡前"];
     const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
@@ -535,53 +638,53 @@
       {
         id: "gatifloxacin",
         name: "加替沙星滴眼液（术前已开）",
-        rule: "每天4次 · 9/16–9/22",
+        rule: "每天4次 · 9/15–9/21",
         periods: [
-          ["2026-09-16", "2026-09-22", slots]
+          ["2026-09-15", "2026-09-21", slots]
         ]
       },
       {
         id: "tobradex",
         name: "典必殊（妥布霉素地塞米松）滴眼液",
-        rule: "每天4次 · 9/16–9/19",
+        rule: "每天4次 · 9/15–9/18",
         warning: "激素类用药，严格按医嘱",
         periods: [
-          ["2026-09-16", "2026-09-19", slots]
+          ["2026-09-15", "2026-09-18", slots]
         ]
       },
       {
         id: "fluorometholone",
         name: "氟米龙滴眼液",
-        rule: "按阶段减量 · 9/20–10/10",
+        rule: "按阶段减量 · 9/19–10/9",
         warning: "激素类用药，严格按医嘱",
         periods: [
-          ["2026-09-20", "2026-09-26", slots],
-          ["2026-09-27", "2026-10-03", ["早", "晚"]],
-          ["2026-10-04", "2026-10-10", ["睡前"]]
+          ["2026-09-19", "2026-09-25", slots],
+          ["2026-09-26", "2026-10-02", ["早", "晚"]],
+          ["2026-10-03", "2026-10-09", ["睡前"]]
         ]
       },
       {
         id: "vitamin-a-gel",
         name: "维生素A棕阀酸酯眼用凝胶",
-        rule: "每晚睡前1次 · 9/16–9/29",
+        rule: "每晚睡前1次 · 9/15–9/28",
         periods: [
-          ["2026-09-16", "2026-09-29", ["睡前"]]
+          ["2026-09-15", "2026-09-28", ["睡前"]]
         ]
       },
       {
         id: "artificial-tears",
         name: "人工泪液",
-        rule: "每天4次 · 9/30–3/30",
+        rule: "每天4次 · 9/29–3/29",
         periods: [
-          ["2026-09-30", "2027-03-30", slots]
+          ["2026-09-29", "2027-03-29", slots]
         ]
       },
       {
         id: "betaxolol",
         name: "盐酸倍他洛尔滴眼液",
-        rule: "每晚1次 · 9/16–10/16",
+        rule: "每晚1次 · 9/15–10/15",
         periods: [
-          ["2026-09-16", "2026-10-16", ["睡前"]]
+          ["2026-09-15", "2026-10-15", ["睡前"]]
         ]
       }
     ];
@@ -598,6 +701,9 @@
     const editorContentEl = document.getElementById("editorContent");
     const editorTitleEl = document.getElementById("editorTitle");
     const editorBackEl = document.getElementById("editorBack");
+    const reminderDialogEl = document.getElementById("reminderDialog");
+    const reminderFormEl = document.getElementById("reminderForm");
+    const reminderStatusEl = document.getElementById("reminderStatus");
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
@@ -606,9 +712,43 @@
     function loadPlans() {
       try {
         const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY));
-        if (Array.isArray(saved) && saved.length === defaultPlans.length) return saved;
+        if (Array.isArray(saved) && saved.length === defaultPlans.length) {
+          if (!localStorage.getItem(PLAN_DATE_MIGRATION_KEY)) {
+            const migrated = shiftPlansOneDayEarlier(saved);
+            localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(migrated));
+            localStorage.setItem(PLAN_DATE_MIGRATION_KEY, "done");
+            return migrated;
+          }
+          return saved;
+        }
       } catch {}
+      localStorage.setItem(PLAN_DATE_MIGRATION_KEY, "done");
       return clone(defaultPlans);
+    }
+
+    function shiftIsoDateOneDayEarlier(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      const shifted = new Date(Date.UTC(year, month - 1, day - 1));
+      return shifted.toISOString().slice(0, 10);
+    }
+
+    function shiftRuleDatesOneDayEarlier(value) {
+      return value.replace(/(\d{1,2})\/(\d{1,2})/g, (_, month, day) => {
+        const shifted = new Date(Date.UTC(2024, Number(month) - 1, Number(day) - 1));
+        return `${shifted.getUTCMonth() + 1}/${shifted.getUTCDate()}`;
+      });
+    }
+
+    function shiftPlansOneDayEarlier(items) {
+      return items.map((plan) => ({
+        ...plan,
+        rule: shiftRuleDatesOneDayEarlier(plan.rule),
+        periods: plan.periods.map(([start, end, activeSlots]) => [
+          shiftIsoDateOneDayEarlier(start),
+          shiftIsoDateOneDayEarlier(end),
+          activeSlots
+        ])
+      }));
     }
 
     function writePlans() {
@@ -820,6 +960,101 @@
       renderEditorList();
     }
 
+    function readReminderSettings() {
+      const defaults = { email: "", morning: "08:00", noon: "12:00", evening: "18:00", bedtime: "22:00", enabled: false };
+      try {
+        return { ...defaults, ...JSON.parse(localStorage.getItem(REMINDER_STORAGE_KEY)) };
+      } catch {
+        return defaults;
+      }
+    }
+
+    function fillReminderForm() {
+      const settings = readReminderSettings();
+      reminderFormEl.elements.email.value = settings.email;
+      reminderFormEl.elements.morning.value = settings.morning;
+      reminderFormEl.elements.noon.value = settings.noon;
+      reminderFormEl.elements.evening.value = settings.evening;
+      reminderFormEl.elements.bedtime.value = settings.bedtime;
+      reminderFormEl.elements.adminKey.value = "";
+      reminderStatusEl.classList.remove("error");
+      reminderStatusEl.textContent = settings.enabled ? "提醒已开启，可修改时间或邮箱。" : "";
+    }
+
+    function setReminderBusy(busy) {
+      [...reminderFormEl.elements].forEach((element) => { element.disabled = busy; });
+    }
+
+    async function saveReminderSettings(form) {
+      const values = Object.fromEntries(new FormData(form));
+      reminderStatusEl.classList.remove("error");
+      reminderStatusEl.textContent = "正在保存…";
+      setReminderBusy(true);
+      try {
+        const response = await fetch("/api/reminder-settings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Reminder-Key": values.adminKey
+          },
+          body: JSON.stringify({
+            email: values.email,
+            morning: values.morning,
+            noon: values.noon,
+            evening: values.evening,
+            bedtime: values.bedtime
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "保存失败，请稍后重试");
+        localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify({
+          email: values.email,
+          morning: values.morning,
+          noon: values.noon,
+          evening: values.evening,
+          bedtime: values.bedtime,
+          enabled: true
+        }));
+        reminderStatusEl.textContent = "已开启四个时段的邮件提醒。";
+        form.elements.adminKey.value = "";
+      } catch (error) {
+        reminderStatusEl.classList.add("error");
+        reminderStatusEl.textContent = error.message;
+      } finally {
+        setReminderBusy(false);
+      }
+    }
+
+    async function disableReminderSettings() {
+      const adminKey = reminderFormEl.elements.adminKey.value;
+      if (!adminKey) {
+        reminderStatusEl.classList.add("error");
+        reminderStatusEl.textContent = "关闭提醒前请输入设置口令。";
+        reminderFormEl.elements.adminKey.focus();
+        return;
+      }
+      reminderStatusEl.classList.remove("error");
+      reminderStatusEl.textContent = "正在关闭…";
+      setReminderBusy(true);
+      try {
+        const response = await fetch("/api/reminder-settings", {
+          method: "DELETE",
+          headers: { "X-Reminder-Key": adminKey }
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "关闭失败，请稍后重试");
+        const settings = readReminderSettings();
+        localStorage.setItem(REMINDER_STORAGE_KEY, JSON.stringify({ ...settings, enabled: false }));
+        reminderStatusEl.textContent = "邮件提醒已关闭。";
+        reminderFormEl.elements.adminKey.value = "";
+      } catch (error) {
+        reminderStatusEl.classList.add("error");
+        reminderStatusEl.textContent = error.message;
+      } finally {
+        setReminderBusy(false);
+      }
+    }
+
     function moveDay(amount) {
       selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + amount);
       render();
@@ -834,6 +1069,19 @@
       editorDialogEl.showModal();
     });
     document.getElementById("editorClose").addEventListener("click", () => editorDialogEl.close());
+    document.getElementById("openReminder").addEventListener("click", () => {
+      fillReminderForm();
+      reminderDialogEl.showModal();
+    });
+    document.getElementById("reminderClose").addEventListener("click", () => reminderDialogEl.close());
+    reminderDialogEl.addEventListener("click", (event) => {
+      if (event.target === reminderDialogEl) reminderDialogEl.close();
+    });
+    reminderFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveReminderSettings(event.target);
+    });
+    document.getElementById("disableReminder").addEventListener("click", disableReminderSettings);
     editorBackEl.addEventListener("click", renderEditorList);
     editorDialogEl.addEventListener("click", (event) => {
       if (event.target === editorDialogEl) editorDialogEl.close();

@@ -16,6 +16,8 @@ const html = fs.readFileSync(path.join(dist, "index.html"), "utf8");
 const worker = fs.readFileSync(path.join(dist, "sw.js"), "utf8");
 const manifest = fs.readFileSync(path.join(dist, "manifest.webmanifest"), "utf8");
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
+const reminderSettings = fs.readFileSync(path.join(root, "api", "reminder-settings.js"), "utf8");
+const sendReminder = fs.readFileSync(path.join(root, "api", "send-reminder.js"), "utf8");
 
 JSON.parse(manifest);
 new Function(worker);
@@ -28,6 +30,10 @@ if (!vercelConfig.rewrites?.some((rule) => rule.source === "/(.*)" && rule.desti
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 if (!inlineScripts.length) throw new Error("index.html 中没有应用脚本");
 for (const match of inlineScripts) new Function(match[1]);
+for (const [name, source] of [["api/reminder-settings.js", reminderSettings], ["api/send-reminder.js", sendReminder]]) {
+  const scriptBody = source.replace(/export\s+default\s+async\s+function\s+handler/, "async function handler");
+  try { new Function(scriptBody); } catch (error) { throw new Error(`${name} 语法错误：${error.message}`); }
+}
 
 const externalAsset = /(?:src|href)\s*=\s*["'](?:https?:)?\/\//i;
 if (externalAsset.test(html)) throw new Error("index.html 仍引用外部资源");
@@ -37,4 +43,8 @@ for (const [name, content] of [["index.html", html], ["sw.js", worker], ["manife
   if (forbidden.test(content)) throw new Error(`dist/${name} 中仍含国外或平台专用依赖`);
 }
 
-console.log("Production verification passed: static PWA, no external runtime dependencies.");
+if (!html.includes('name="bedtime"') || !reminderSettings.includes('bedtime')) {
+  throw new Error("缺少睡前提醒时间设置");
+}
+
+console.log("Production verification passed: PWA plus four email reminder schedules.");
