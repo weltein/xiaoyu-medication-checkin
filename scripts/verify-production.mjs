@@ -66,5 +66,18 @@ const resetFunction = html.match(/function resetUserDataFromSource\(\) \{[\s\S]*
 if (resetFunction.includes('medication-memo-v1') || !html.includes('const STORAGE_KEY = "medication-checkin-records-v2"')) {
   throw new Error("备忘录升级不得改变或清除现有打卡数据");
 }
+if (!worker.includes('medication-checkin-v8') || !worker.includes('cache: "no-store"')) {
+  throw new Error("Service Worker 缺少强制更新和离线回退策略");
+}
+if (!html.includes('updateViaCache: "none"') || !html.includes('controllerchange')) {
+  throw new Error("页面缺少 Service Worker 自动接管刷新逻辑");
+}
+const indexHeaders = vercelConfig.headers?.find((rule) => rule.source === "/index.html")?.headers || [];
+const workerHeaders = vercelConfig.headers?.find((rule) => rule.source === "/sw.js")?.headers || [];
+for (const [name, headers] of [["index.html", indexHeaders], ["sw.js", workerHeaders]]) {
+  if (!headers.some((header) => header.key === "Cache-Control" && header.value.includes("no-store"))) {
+    throw new Error(`${name} 缺少 no-store 响应头`);
+  }
+}
 
 console.log("Production verification passed: medication check-in PWA with editable local memo.");
