@@ -167,6 +167,88 @@
 
     .today-button.visible { display: inline-flex; }
 
+    .memo-card {
+      position: relative;
+      margin-top: 22px;
+      padding: 17px 18px;
+      overflow: hidden;
+      border: 1px solid #efd6a7;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #fff8dc, #fff3e6);
+      box-shadow: 0 8px 24px rgba(121, 78, 30, 0.08);
+    }
+
+    .memo-card::after {
+      content: "";
+      position: absolute;
+      width: 76px;
+      height: 76px;
+      right: -24px;
+      bottom: -34px;
+      border-radius: 50%;
+      background: rgba(239, 190, 98, 0.18);
+    }
+
+    .memo-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .memo-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      color: #8b5a20;
+      font-size: 0.88rem;
+      font-weight: 760;
+    }
+
+    .memo-edit-button {
+      min-width: 52px;
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid rgba(139, 90, 32, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: #8b5a20;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .memo-content {
+      position: relative;
+      z-index: 1;
+      margin: 10px 0 0;
+      color: #4e3824;
+      font-size: 1.02rem;
+      font-weight: 680;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .memo-textarea {
+      width: 100%;
+      min-height: 138px;
+      padding: 13px 14px;
+      resize: vertical;
+      border: 1px solid #dbcdd1;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.6;
+    }
+
+    .memo-textarea:focus {
+      border-color: var(--rose);
+      outline: 3px solid rgba(189, 88, 112, 0.12);
+    }
+
     .schedule { margin-top: 28px; }
 
     .period { margin-top: 28px; }
@@ -516,8 +598,16 @@
       <button class="today-button" id="backToday" type="button">回到今天</button>
     </section>
 
+    <aside class="memo-card" aria-labelledby="memoTitle">
+      <div class="memo-heading">
+        <h2 class="memo-title" id="memoTitle"><span aria-hidden="true">📌</span>重要事项</h2>
+        <button class="memo-edit-button" id="editMemo" type="button">编辑</button>
+      </div>
+      <p class="memo-content" id="memoContent"></p>
+    </aside>
+
     <section class="schedule" id="schedule" aria-label="当日用药安排"></section>
-    <p class="storage-note">打卡记录仅保存在当前设备</p>
+    <p class="storage-note">打卡记录与备忘录仅保存在当前设备</p>
   </main>
 
   <dialog class="editor-dialog" id="editorDialog" aria-labelledby="editorTitle">
@@ -531,10 +621,32 @@
     </div>
   </dialog>
 
+  <dialog class="editor-dialog" id="memoDialog" aria-labelledby="memoDialogTitle">
+    <div class="editor-shell">
+      <header class="editor-header">
+        <span aria-hidden="true" style="width:44px"></span>
+        <h2 class="editor-title" id="memoDialogTitle">编辑重要事项</h2>
+        <button class="editor-close" id="memoClose" type="button" aria-label="关闭">×</button>
+      </header>
+      <div class="editor-content">
+        <form class="plan-form" id="memoForm">
+          <label class="field">
+            <span>备忘内容</span>
+            <textarea class="memo-textarea" name="memo" maxlength="300" placeholder="例如：10月20号去医院复查。"></textarea>
+          </label>
+          <p class="form-error" id="memoError" role="alert"></p>
+          <button class="save-plan-button" type="submit">保存备忘录</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const STORAGE_KEY = "medication-checkin-records-v2";
     const PLAN_STORAGE_KEY = "medication-plans-v2";
+    const MEMO_STORAGE_KEY = "medication-memo-v1";
     const DATA_RESET_KEY = "medication-source-reset-2026-09-v1";
+    const DEFAULT_MEMO = "10月20号去医院复查。";
     const slots = ["早", "午", "晚", "睡前"];
     const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 
@@ -606,6 +718,9 @@
     const editorContentEl = document.getElementById("editorContent");
     const editorTitleEl = document.getElementById("editorTitle");
     const editorBackEl = document.getElementById("editorBack");
+    const memoContentEl = document.getElementById("memoContent");
+    const memoDialogEl = document.getElementById("memoDialog");
+    const memoFormEl = document.getElementById("memoForm");
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
@@ -633,6 +748,33 @@
 
     function writePlans() {
       localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(plans));
+    }
+
+    function readMemo() {
+      const saved = localStorage.getItem(MEMO_STORAGE_KEY);
+      return saved === null ? DEFAULT_MEMO : saved;
+    }
+
+    function renderMemo() {
+      memoContentEl.textContent = readMemo() || "暂无重要事项，点击编辑添加。";
+    }
+
+    function openMemoEditor() {
+      memoFormEl.elements.memo.value = readMemo();
+      document.getElementById("memoError").textContent = "";
+      memoDialogEl.showModal();
+      memoFormEl.elements.memo.focus();
+    }
+
+    function saveMemo(form) {
+      const memo = form.elements.memo.value.trim();
+      if (memo.length > 300) {
+        document.getElementById("memoError").textContent = "备忘内容不能超过300个字。";
+        return;
+      }
+      localStorage.setItem(MEMO_STORAGE_KEY, memo);
+      renderMemo();
+      memoDialogEl.close();
     }
 
     function localDate(value = new Date()) {
@@ -854,6 +996,15 @@
       editorDialogEl.showModal();
     });
     document.getElementById("editorClose").addEventListener("click", () => editorDialogEl.close());
+    document.getElementById("editMemo").addEventListener("click", openMemoEditor);
+    document.getElementById("memoClose").addEventListener("click", () => memoDialogEl.close());
+    memoDialogEl.addEventListener("click", (event) => {
+      if (event.target === memoDialogEl) memoDialogEl.close();
+    });
+    memoFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveMemo(event.target);
+    });
     editorBackEl.addEventListener("click", renderEditorList);
     editorDialogEl.addEventListener("click", (event) => {
       if (event.target === editorDialogEl) editorDialogEl.close();
@@ -874,6 +1025,7 @@
       toggleRecord(button.dataset.date, button.dataset.slot, button.dataset.medicine);
     });
 
+    renderMemo();
     render();
 
     if ("serviceWorker" in navigator) {

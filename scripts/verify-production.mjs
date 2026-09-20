@@ -59,5 +59,12 @@ for (const requiredParts of expectedSourceShift) {
 if (!html.includes('medication-source-reset-2026-09-v1') || !html.includes('medication-checkin-records-v2')) {
   throw new Error("缺少面向现有用户的一次性数据重置");
 }
+if (!html.includes('medication-memo-v1') || !html.includes('id="memoContent"') || !html.includes('id="memoForm"')) {
+  throw new Error("缺少可编辑的首页备忘录");
+}
+const resetFunction = html.match(/function resetUserDataFromSource\(\) \{[\s\S]*?\n    \}/)?.[0] || "";
+if (resetFunction.includes('medication-memo-v1') || !html.includes('const STORAGE_KEY = "medication-checkin-records-v2"')) {
+  throw new Error("备忘录升级不得改变或清除现有打卡数据");
+}
 
-console.log("Production verification passed: medication check-in PWA without reminder services.");
+console.log("Production verification passed: medication check-in PWA with editable local memo.");
